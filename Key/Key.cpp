@@ -64,7 +64,8 @@ int TypeStart(HWND hwnd)
 	int n;
 
 	n = rand() % 26; // 0から25までの整数値をランダムに生成
-	iMon = 'a' + n; // a の仮想キーコードに0から25までの値を加えると、aからzまでのキーコードの数値になる
+	iMon = 97 + n; // a のASCIIコード97に0から25までの値を加えると、aからzまでのASCIIコードの数値になる
+
 	// std::format を使うには、
 	// プロジェクトのプロパティ「C++言語標準」を「ISO C++ 20 標準 (/std:c++20)」へ変更すること。
 	strMondai = std::format(L"次の問題は　{:c}", iMon);
