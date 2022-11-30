@@ -85,10 +85,24 @@ LRESULT CALLBACK WndProc(
 
 	static std::chrono::system_clock::time_point start;
 
+	static bool isControlDown = false;
+
 	switch (uMsg) {
 	case WM_CREATE:
 		srand((unsigned)time(NULL));    // 乱数の種を初期化する
 		return 0;
+
+	case WM_KEYDOWN:
+		if (wParam == VK_CONTROL) isControlDown = true;
+
+		if (isControlDown && wParam == 0x57) {
+			PostQuitMessage(0);
+			break;
+		}
+		break;
+	case WM_KEYUP:
+		if (wParam == VK_CONTROL) isControlDown = false;
+		break;
 	case WM_CHAR:
 		if (wParam == VK_SPACE && !bStart) {
 			bStart = true;
