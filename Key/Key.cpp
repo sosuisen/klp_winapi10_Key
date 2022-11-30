@@ -1,180 +1,156 @@
-﻿// Key.cpp : アプリケーションのエントリ ポイントを定義します。
-//
+﻿#include <windows.h>
+#include <string>
+#include <format>
+#include <chrono>
 
-#include "framework.h"
-#include "Key.h"
+static const int WIN_WIDTH = 500;
+static const int WIN_HEIGHT = 400;
 
-#define MAX_LOADSTRING 100
+// 問題の仮想キーコード
+static int iMon;
+static std::wstring strMondai;
 
-// グローバル変数:
-HINSTANCE hInst;                                // 現在のインターフェイス
-WCHAR szTitle[MAX_LOADSTRING];                  // タイトル バーのテキスト
-WCHAR szWindowClass[MAX_LOADSTRING];            // メイン ウィンドウ クラス名
-
-// このコード モジュールに含まれる関数の宣言を転送します:
-ATOM                MyRegisterClass(HINSTANCE hInstance);
-BOOL                InitInstance(HINSTANCE, int);
-LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
-INT_PTR CALLBACK    About(HWND, UINT, WPARAM, LPARAM);
+LRESULT CALLBACK WndProc(
+	HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
-                     _In_opt_ HINSTANCE hPrevInstance,
-                     _In_ LPWSTR    lpCmdLine,
-                     _In_ int       nCmdShow)
+	_In_opt_ HINSTANCE hPrevInstance, _In_ LPWSTR lpCmdLine, _In_ int nCmdShow)
 {
-    UNREFERENCED_PARAMETER(hPrevInstance);
-    UNREFERENCED_PARAMETER(lpCmdLine);
+	TCHAR szAppName[] = L"TypingApp";
+	WNDCLASS wc;
+	HWND hwnd;
+	MSG msg;
 
-    // TODO: ここにコードを挿入してください。
+	// ウィンドウクラスの属性を設定
+	wc.style = CS_HREDRAW | CS_VREDRAW;
+	wc.lpfnWndProc = WndProc;
+	wc.cbClsExtra = 0;
+	wc.cbWndExtra = 0;
+	wc.hInstance = hInstance;
+	wc.hIcon = LoadIcon(NULL, IDI_APPLICATION);
+	wc.hCursor = LoadCursor(NULL, IDC_ARROW);
+	wc.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
+	wc.lpszMenuName = NULL;
+	wc.lpszClassName = szAppName;
 
-    // グローバル文字列を初期化する
-    LoadStringW(hInstance, IDS_APP_TITLE, szTitle, MAX_LOADSTRING);
-    LoadStringW(hInstance, IDC_KEY, szWindowClass, MAX_LOADSTRING);
-    MyRegisterClass(hInstance);
+	// ウィンドウクラスを登録
+	if (!RegisterClass(&wc)) return 0;
 
-    // アプリケーション初期化の実行:
-    if (!InitInstance (hInstance, nCmdShow))
-    {
-        return FALSE;
-    }
+	// ウィンドウを作成
+	hwnd = CreateWindow(
+		szAppName,
+		L"タイピング練習(スペースで開始)",
+		WS_OVERLAPPEDWINDOW,
+		50, 50,
+		WIN_WIDTH, WIN_HEIGHT,
+		NULL, NULL,
+		hInstance, NULL);
 
-    HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_KEY));
+	if (!hwnd) return 0;
 
-    MSG msg;
+	// ウィンドウを表示
+	ShowWindow(hwnd, nCmdShow);
 
-    // メイン メッセージ ループ:
-    while (GetMessage(&msg, nullptr, 0, 0))
-    {
-        if (!TranslateAccelerator(msg.hwnd, hAccelTable, &msg))
-        {
-            TranslateMessage(&msg);
-            DispatchMessage(&msg);
-        }
-    }
+	while (GetMessage(&msg, NULL, 0, 0) > 0) {
+		TranslateMessage(&msg);
+		DispatchMessage(&msg);
+	}
 
-    return (int) msg.wParam;
+	return (int)msg.wParam;
 }
 
-
-
-//
-//  関数: MyRegisterClass()
-//
-//  目的: ウィンドウ クラスを登録します。
-//
-ATOM MyRegisterClass(HINSTANCE hInstance)
+int TypeStart(HWND hwnd)
 {
-    WNDCLASSEXW wcex;
+	int n;
 
-    wcex.cbSize = sizeof(WNDCLASSEX);
+	n = rand() % 26; // 0から25までの整数値をランダムに生成
+	iMon = 'a' + n; // a の仮想キーコードに0から25までの値を加えると、aからzまでのキーコードの数値になる
+	// std::format を使うには、
+	// プロジェクトのプロパティ「C++言語標準」を「ISO C++ 20 標準 (/std:c++20)」へ変更すること。
+	strMondai = std::format(L"次の問題は　{:c}", iMon);
 
-    wcex.style          = CS_HREDRAW | CS_VREDRAW;
-    wcex.lpfnWndProc    = WndProc;
-    wcex.cbClsExtra     = 0;
-    wcex.cbWndExtra     = 0;
-    wcex.hInstance      = hInstance;
-    wcex.hIcon          = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_KEY));
-    wcex.hCursor        = LoadCursor(nullptr, IDC_ARROW);
-    wcex.hbrBackground  = (HBRUSH)(COLOR_WINDOW+1);
-    wcex.lpszMenuName   = MAKEINTRESOURCEW(IDC_KEY);
-    wcex.lpszClassName  = szWindowClass;
-    wcex.hIconSm        = LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_SMALL));
-
-    return RegisterClassExW(&wcex);
+	InvalidateRect(hwnd, NULL, TRUE);
+	return 0;
 }
 
-//
-//   関数: InitInstance(HINSTANCE, int)
-//
-//   目的: インスタンス ハンドルを保存して、メイン ウィンドウを作成します
-//
-//   コメント:
-//
-//        この関数で、グローバル変数でインスタンス ハンドルを保存し、
-//        メイン プログラム ウィンドウを作成および表示します。
-//
-BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
+LRESULT CALLBACK WndProc(
+	HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-   hInst = hInstance; // グローバル変数にインスタンス ハンドルを格納する
+	HDC hdc;
 
-   HWND hWnd = CreateWindowW(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW,
-      CW_USEDEFAULT, 0, CW_USEDEFAULT, 0, nullptr, nullptr, hInstance, nullptr);
+	static std::wstring strInput;
+	static std::wstring strCheck;
+	static bool bStart = false, bSeikai = true;
 
-   if (!hWnd)
-   {
-      return FALSE;
-   }
+	static std::chrono::system_clock::time_point start;
 
-   ShowWindow(hWnd, nCmdShow);
-   UpdateWindow(hWnd);
+	switch (uMsg) {
+	case WM_CREATE:
+		srand((unsigned)time(NULL));    // 乱数の種を初期化する
+		return 0;
+	case WM_CHAR:
+		if (wParam == VK_SPACE && !bStart) {
+			bStart = true;
+			TypeStart(hwnd);
 
-   return TRUE;
-}
+			// 反応時間測定開始
+			start = std::chrono::system_clock::now();
 
-//
-//  関数: WndProc(HWND, UINT, WPARAM, LPARAM)
-//
-//  目的: メイン ウィンドウのメッセージを処理します。
-//
-//  WM_COMMAND  - アプリケーション メニューの処理
-//  WM_PAINT    - メイン ウィンドウを描画する
-//  WM_DESTROY  - 中止メッセージを表示して戻る
-//
-//
-LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
-{
-    switch (message)
-    {
-    case WM_COMMAND:
-        {
-            int wmId = LOWORD(wParam);
-            // 選択されたメニューの解析:
-            switch (wmId)
-            {
-            case IDM_ABOUT:
-                DialogBox(hInst, MAKEINTRESOURCE(IDD_ABOUTBOX), hWnd, About);
-                break;
-            case IDM_EXIT:
-                DestroyWindow(hWnd);
-                break;
-            default:
-                return DefWindowProc(hWnd, message, wParam, lParam);
-            }
-        }
-        break;
-    case WM_PAINT:
-        {
-            PAINTSTRUCT ps;
-            HDC hdc = BeginPaint(hWnd, &ps);
-            // TODO: HDC を使用する描画コードをここに追加してください...
-            EndPaint(hWnd, &ps);
-        }
-        break;
-    case WM_DESTROY:
-        PostQuitMessage(0);
-        break;
-    default:
-        return DefWindowProc(hWnd, message, wParam, lParam);
-    }
-    return 0;
-}
+			break;
+		}
 
-// バージョン情報ボックスのメッセージ ハンドラーです。
-INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
-{
-    UNREFERENCED_PARAMETER(lParam);
-    switch (message)
-    {
-    case WM_INITDIALOG:
-        return (INT_PTR)TRUE;
+		if (bStart == false) break;
+			
+		if (wParam == VK_ESCAPE) {
+			strMondai = L"";
+			strInput = L"";
+			strCheck = L"";
 
-    case WM_COMMAND:
-        if (LOWORD(wParam) == IDOK || LOWORD(wParam) == IDCANCEL)
-        {
-            EndDialog(hDlg, LOWORD(wParam));
-            return (INT_PTR)TRUE;
-        }
-        break;
-    }
-    return (INT_PTR)FALSE;
+			InvalidateRect(hwnd, NULL, true);
+			bStart = false;
+			break;
+		}
+		strInput = std::format(L"あなたの入力は　{:c}", (int)wParam);
+
+		if (iMon == (int)wParam) {
+			bSeikai = true;
+
+			// 測定終了
+			std::chrono::system_clock::time_point end = std::chrono::system_clock::now();
+			long msec = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+
+
+			strCheck = std::format(L"反応時間は　{:d}ミリ秒", msec);
+			TypeStart(hwnd);
+		}
+		else {
+			bSeikai = false;
+			MessageBeep(MB_OK);
+			strCheck = L"タイプミス！";
+		}
+		InvalidateRect(hwnd, NULL, TRUE);
+
+		break;
+	case WM_PAINT: {
+		PAINTSTRUCT paint;
+		hdc = BeginPaint(hwnd, &paint);
+
+		TextOut(hdc, 0, 0, strMondai.c_str(), strMondai.length());
+
+		TextOut(hdc, 0, 40, strInput.c_str(), strInput.length());
+		if (bSeikai)
+			SetTextColor(hdc, RGB(0, 0, 0));
+		else
+			SetTextColor(hdc, RGB(255, 0, 0));
+		TextOut(hdc, 0, 80, strCheck.c_str(), strCheck.length());
+
+		EndPaint(hwnd, &paint);
+
+		return 0;
+	}
+	case WM_DESTROY:
+		PostQuitMessage(0);
+		return 0;
+	}
+	return DefWindowProc(hwnd, uMsg, wParam, lParam);
 }
