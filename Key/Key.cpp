@@ -6,7 +6,7 @@
 static const int WIN_WIDTH = 500;
 static const int WIN_HEIGHT = 400;
 
-// 問題の仮想キーコード
+// 問題のASCIIキーコード
 static int iMon;
 static std::wstring strMondai;
 
