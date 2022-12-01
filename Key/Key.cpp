@@ -95,7 +95,7 @@ LRESULT CALLBACK WndProc(
 	case WM_KEYDOWN:
 		if (wParam == VK_CONTROL) isControlDown = true;
 
-		if (isControlDown && wParam == 0x57) {
+		if (isControlDown && wParam == 0x48) {
 			PostQuitMessage(0);
 			break;
 		}
