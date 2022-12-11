@@ -90,7 +90,8 @@ LRESULT CALLBACK WndProc(
 		srand((unsigned)time(NULL));    // 乱数の種を初期化する
 		return 0;
 	case WM_CHAR:
-		if (wParam == VK_SPACE && !bStart) {
+		// SPACE 0x20
+		if (wParam == 0x20 && !bStart) {
 			bStart = true;
 			TypeStart(hwnd);
 
@@ -102,7 +103,8 @@ LRESULT CALLBACK WndProc(
 
 		if (bStart == false) break;
 			
-		if (wParam == VK_ESCAPE) {
+		// ESCAPE 0x1vb
+		if (wParam == 0x1b) {
 			strMondai = L"";
 			strInput = L"";
 			strCheck = L"";
