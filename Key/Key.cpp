@@ -139,6 +139,7 @@ LRESULT CALLBACK WndProc(
 
 			strCheck = std::format(L"反応時間は　{:d}ミリ秒", msec);
 			TypeStart(hwnd);
+			start = std::chrono::system_clock::now();
 		}
 		else {
 			bSeikai = false;
